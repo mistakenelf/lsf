@@ -2,19 +2,21 @@ use chrono::{DateTime, Local};
 use crossterm::style::Stylize;
 use crossterm::{execute, style, style::Color, style::Print, style::ResetColor};
 use std::io::stdout;
-use std::{ffi::OsString, fs::DirEntry};
+use std::fs::DirEntry;
 
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct ListItem {
-    file_name: OsString,
+    pub file_name: String,
     size: u64,
     modified_date: DateTime<Local>,
     is_dir: bool,
     hide_icons: bool,
+    hide_hidden: bool,
 }
 
 impl ListItem {
-    pub fn new(entry: DirEntry, hide_icons: bool) -> ListItem {
-        let file_name = entry.file_name();
+    pub fn new(entry: DirEntry, hide_icons: bool, hide_hidden: bool) -> ListItem {
+        let file_name = entry.file_name().into_string().unwrap();
         let metadata = entry.metadata().unwrap();
         let size = metadata.len();
         let modified: DateTime<Local> = DateTime::from(metadata.modified().unwrap());
@@ -26,23 +28,28 @@ impl ListItem {
             modified_date: modified,
             is_dir,
             hide_icons,
+            hide_hidden,
         }
     }
 
-    pub fn print(self) {
+    pub fn print(&self) {
         let file_name: String;
         let color: Color;
         let mut icon: String;
 
         if self.is_dir {
+            icon = String::from("\u{f74a}");
             file_name = format!(
                 "{0:<10}\n",
-                self.file_name.into_string().unwrap().bold().blue()
+                self.file_name.clone().bold().blue()
             );
-            icon = String::from("\u{f74a}");
-
+            
             if self.hide_icons {
                 icon = String::from("");
+            }
+
+            if self.hide_hidden && self.file_name.starts_with(".") {
+                return 
             }
 
             color = Color::Rgb {
@@ -51,11 +58,15 @@ impl ListItem {
                 b: 77,
             };
         } else {
-            file_name = format!("{0:<10}\n", self.file_name.into_string().unwrap());
+            file_name = format!("{0:<10}\n", self.file_name);
             icon = String::from("\u{f723}");
 
             if self.hide_icons {
                 icon = String::from("");
+            }
+
+            if self.hide_hidden && file_name.starts_with(".") {
+                return
             }
 
             color = Color::Rgb {
