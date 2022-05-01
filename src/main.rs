@@ -1,6 +1,6 @@
 use clap::Parser;
-use std::error::Error;
 use std::path::PathBuf;
+use std::process;
 
 mod list_item;
 mod listing;
@@ -13,16 +13,25 @@ struct Args {
     #[clap(short, long, default_value = ".", parse(from_os_str))]
     path: PathBuf,
 
-    #[clap(short = 'i', long, takes_value = false)]
-    hide_icons: bool,
+    #[clap(short, long, takes_value = false)]
+    icons: bool,
 
-    #[clap(short = 'd', long, takes_value = false)]
-    hide_hidden: bool,
+    #[clap(short, long, takes_value = false)]
+    all: bool,
+
+    #[clap(short, long, takes_value = false)]
+    long: bool,
+
+    #[clap(short = '1', long, takes_value = false)]
+    single: bool,
 }
 
-pub fn main() -> Result<(), Box<dyn Error>> {
+pub fn main() {
     let args = Args::parse();
-    let listing = Listing::new(&args.path, args.hide_icons, args.hide_hidden);
+    let listing = Listing::new(&args.path, args.icons, args.all, args.long, args.single);
 
-    listing.print_listing()
+    if let Err(ref e) = listing.print_listing() {
+        println!("{}", e);
+        process::exit(1);
+    }
 }
