@@ -10,6 +10,7 @@ pub struct Listing {
     all: bool,
     long: bool,
     single: bool,
+    sorted_entries: Vec<ListItem>,
 }
 
 impl Listing {
@@ -20,38 +21,44 @@ impl Listing {
             all,
             long,
             single,
+            sorted_entries: Vec::new(),
         }
     }
 
-    pub fn print_listing(&self) -> Result<(), Box<dyn Error>> {
-        if self.dir_name.is_dir() {
-            let mut items: Vec<ListItem> = vec![];
-            let mut entries = fs::read_dir(&self.dir_name)?
-                .map(|res| res.map(|e| e))
-                .collect::<Result<Vec<_>, io::Error>>()?;
+    pub fn get_entries(&mut self) -> Result<(), Box<dyn Error>> {
+        let mut entries = fs::read_dir(&self.dir_name)?
+            .map(|res| res.map(|e| e))
+            .collect::<Result<Vec<_>, io::Error>>()?;
 
-            entries.sort_by_key(|e| e.file_name().clone());
+        entries.sort_by_key(|e| e.file_name().clone());
 
-            for entry in entries {
-                let item = ListItem::new(entry);
+        for entry in entries {
+            let item = ListItem::new(entry);
 
-                if self.all {
-                    items.push(item);
-                } else if !item.file_name.starts_with(".") {
-                    items.push(item);
-                }
+            if self.all {
+                self.sorted_entries.push(item);
+            } else if !item.file_name.starts_with(".") {
+                self.sorted_entries.push(item);
             }
+        }
 
-            for sorted_item in &items {
+        Ok(())
+    }
+
+    pub fn print_listing(&mut self) -> Result<(), Box<dyn Error>> {
+        if self.dir_name.is_dir() {
+            self.get_entries()?;
+
+            for item in &self.sorted_entries {
                 if self.long {
-                    sorted_item.display_details();
+                    item.display_details();
                 }
 
                 if self.icons {
-                    sorted_item.display_icon();
+                    item.display_icon();
                 }
 
-                sorted_item.display_filename();
+                item.display_filename();
 
                 if self.long || self.single {
                     print!("\n");

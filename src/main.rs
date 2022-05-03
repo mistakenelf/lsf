@@ -28,7 +28,7 @@ struct Args {
 
 pub fn main() {
     let args = Args::parse();
-    let listing = Listing::new(&args.path, args.icons, args.all, args.long, args.single);
+    let mut listing = Listing::new(&args.path, args.icons, args.all, args.long, args.single);
 
     if let Err(ref e) = listing.print_listing() {
         println!("{}", e);
