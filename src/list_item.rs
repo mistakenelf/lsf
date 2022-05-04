@@ -43,7 +43,7 @@ impl ListItem {
                 "{} {:<6} {:<10} ",
                 permissions,
                 ListItem::format_size(self.size),
-                self.modified_date.format("%_d %b %H:%M").to_string()
+                self.modified_date.format("%D %H:%M").to_string()
             )),
         )
         .unwrap();

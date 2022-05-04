@@ -24,11 +24,17 @@ struct Args {
 
     #[clap(short = '1', long, takes_value = false)]
     single: bool,
+
+    #[clap(short = 'D', long, takes_value = false)]
+    dirs_only: bool,
+
+    #[clap(short = 'F', long, takes_value = false)]
+    files_only: bool,
 }
 
 pub fn main() {
     let args = Args::parse();
-    let mut listing = Listing::new(&args.path, args.icons, args.all, args.long, args.single);
+    let mut listing = Listing::new(&args.path, args.icons, args.all, args.long, args.single, args.dirs_only, args.files_only);
 
     if let Err(ref e) = listing.print_listing() {
         println!("{}", e);

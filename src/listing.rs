@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::path::PathBuf;
-use std::{fs, io};
+use std::fs;
+use std::fs::DirEntry;
 
 use crate::list_item::ListItem;
 
@@ -10,25 +11,46 @@ pub struct Listing {
     all: bool,
     long: bool,
     single: bool,
+    dirs_only: bool,
+    files_only: bool,
     sorted_entries: Vec<ListItem>,
 }
 
 impl Listing {
-    pub fn new(dir_name: &PathBuf, icons: bool, all: bool, long: bool, single: bool) -> Listing {
+    pub fn new(
+        dir_name: &PathBuf,
+        icons: bool,
+        all: bool,
+        long: bool,
+        single: bool,
+        dirs_only: bool,
+        files_only: bool,
+    ) -> Listing {
         Listing {
             dir_name: dir_name.to_path_buf(),
             icons,
             all,
             long,
             single,
+            dirs_only,
+            files_only,
             sorted_entries: Vec::new(),
         }
     }
 
     pub fn get_entries(&mut self) -> Result<(), Box<dyn Error>> {
-        let mut entries = fs::read_dir(&self.dir_name)?
-            .map(|res| res.map(|e| e))
-            .collect::<Result<Vec<_>, io::Error>>()?;
+        let mut entries: Vec<DirEntry> = fs::read_dir(&self.dir_name)?
+            .filter_map(|res| res.ok())
+            .filter(|entry| {
+                if self.dirs_only {
+                    entry.path().is_dir()
+                } else if self.files_only {
+                    !entry.path().is_dir()
+                } else {
+                    true
+                }
+            })
+            .collect();
 
         entries.sort_by_key(|e| e.file_name().clone());
 
