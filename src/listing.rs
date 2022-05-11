@@ -86,6 +86,10 @@ impl Listing {
                     print!("\n");
                 }
             }
+
+            if !self.long {
+                print!("\n");
+            }
         }
 
         Ok(())

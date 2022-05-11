@@ -105,9 +105,9 @@ impl ListItem {
     }
 
     fn parse_permissions(mode: u16) -> String {
-        let user = ListItem::triplet(mode, S_IRUSR, S_IWUSR, S_IXUSR);
-        let group = ListItem::triplet(mode, S_IRGRP, S_IWGRP, S_IXGRP);
-        let other = ListItem::triplet(mode, S_IROTH, S_IWOTH, S_IXOTH);
+        let user = ListItem::triplet(mode, S_IRUSR as u16, S_IWUSR as u16, S_IXUSR as u16);
+        let group = ListItem::triplet(mode, S_IRGRP as u16, S_IWGRP as u16, S_IXGRP as u16);
+        let other = ListItem::triplet(mode, S_IROTH as u16, S_IWOTH as u16, S_IXOTH as u16);
 
         [user, group, other].join("")
     }
